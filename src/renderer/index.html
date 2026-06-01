@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline';" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LYNX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600&display=swap" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0a;
+      --bg1:       #111111;
+      --bg2:       #1a1a1a;
+      --bg3:       #222222;
+      --border:    #2a2a2a;
+      --border2:   #333333;
+      --text:      #f0f0f0;
+      --text2:     #999999;
+      --text3:     #555555;
+      --accent:    #ffffff;
+      --green:     #4ade80;
+      --green-dim: #166534;
+      --red:       #f87171;
+      --red-dim:   #7f1d1d;
+      --yellow:    #fbbf24;
+      --blue:      #60a5fa;
+      --radius:    4px;
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Space Grotesk', sans-serif;
+    }
+
+    html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased; user-select:none; }
+
+    #app { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+
+    /* ─── Titlebar ── */
+    #titlebar {
+      display:flex; align-items:center; justify-content:space-between;
+      height:40px; padding:0 12px;
+      background:var(--bg); border-bottom:1px solid var(--border);
+      -webkit-app-region:drag; flex-shrink:0;
+    }
+    #titlebar .logo { display:flex; align-items:center; gap:8px; -webkit-app-region:no-drag; }
+    #titlebar .app-name { font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:0.08em; color:var(--text2); text-transform:uppercase; }
+    #titlebar .win-btns { display:flex; gap:4px; -webkit-app-region:no-drag; }
+    .win-btn { width:28px; height:28px; border:none; background:transparent; color:var(--text3); cursor:pointer; border-radius:var(--radius); display:flex; align-items:center; justify-content:center; transition:background 0.15s,color 0.15s; }
+    .win-btn:hover { background:var(--bg3); color:var(--text); }
+    .win-btn.close:hover { background:var(--red-dim); color:var(--red); }
+
+    /* ─── Main ── */
+    #main { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+    .panel { display:none; flex-direction:column; height:100%; }
+    .panel.active { display:flex; }
+
+    /* ─── Home Panel ── */
+    #panel-home { padding:16px; gap:12px; overflow-y:auto; }
+
+    /* ── Power Button ── */
+    .connect-section {
+      background:var(--bg1); border:1px solid var(--border); border-radius:var(--radius);
+      padding:24px 20px; display:flex; align-items:center; justify-content:space-between;
+    }
+    .connect-info { flex:1; }
+    .connect-label { font-family:var(--mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:4px; }
+    .connect-status { font-size:15px; font-weight:600; color:var(--text); }
+    .connect-status.connected { color:var(--green); }
+    .connect-status.connecting { color:var(--yellow); }
+    .connect-sub { font-size:11px; color:var(--text3); font-family:var(--mono); margin-top:2px; }
+
+    /* Power button replaces toggle */
+    .power-btn-wrap { flex-shrink:0; margin-left:16px; }
+    .power-btn {
+      width:64px; height:64px;
+      border-radius:50%;
+      background:var(--bg2);
+      border:2px solid var(--border2);
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.2s;
+      position:relative;
+      outline:none;
+    }
+    .power-btn:hover { border-color:var(--text3); background:var(--bg3); }
+    .power-btn.on { border-color:var(--green); background:var(--green-dim); box-shadow:0 0 18px rgba(74,222,128,0.2); }
+    .power-btn.connecting { border-color:var(--yellow); animation:pulse-border 1s infinite; }
+    .power-btn svg { width:28px; height:28px; transition:all 0.2s; }
+    .power-btn .power-icon { color:var(--text3); }
+    .power-btn.on .power-icon { color:var(--green); }
+    .power-btn.connecting .power-icon { color:var(--yellow); }
+    .power-btn:disabled { opacity:0.5; cursor:not-allowed; }
+    @keyframes pulse-border { 0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0.4)} 50%{box-shadow:0 0 0 8px rgba(251,191,36,0)} }
+
+    /* Config card */
+    .selected-config-card { background:var(--bg1); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; }
+    .config-card-label { font-family:var(--mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:8px; }
+    .config-card-name { font-weight:500; font-size:14px; margin-bottom:4px; }
+    .config-card-host { font-family:var(--mono); font-size:11px; color:var(--text2); }
+    .config-card-empty { color:var(--text3); font-style:italic; font-size:12px; }
+
+    /* Mode row */
+    .mode-row { display:flex; gap:8px; }
+    .mode-btn { flex:1; padding:10px; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg1); color:var(--text2); cursor:pointer; font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; text-align:center; transition:all 0.15s; display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .mode-btn:hover { border-color:var(--border2); color:var(--text); }
+    .mode-btn.active { border-color:var(--text3); background:var(--bg2); color:var(--text); }
+    .mode-btn .mode-icon { font-size:16px; }
+    .mode-btn .mode-sub { font-size:9px; color:var(--text3); letter-spacing:0; text-transform:none; font-family:var(--sans); }
+
+    /* Proxy info */
+    .proxy-info { background:var(--bg1); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; }
+    .proxy-addr { font-family:var(--mono); font-size:12px; color:var(--text); }
+    .proxy-addr span { color:var(--text3); }
+
+    /* Quick actions */
+    .quick-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .quick-btn { background:var(--bg1); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--text2); cursor:pointer; font-family:var(--sans); font-size:12px; text-align:left; transition:all 0.15s; display:flex; align-items:center; gap:8px; }
+    .quick-btn:hover { border-color:var(--border2); color:var(--text); background:var(--bg2); }
+    .quick-btn:active { background:var(--bg3); }
+    .quick-btn .qb-icon { font-size:14px; flex-shrink:0; }
+
+    /* Speed result */
+    .speed-result { background:var(--bg1); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; }
+    .speed-number { font-family:var(--mono); font-size:36px; font-weight:600; color:var(--text); }
+    .speed-unit { font-family:var(--mono); font-size:12px; color:var(--text3); margin-top:4px; }
+    .speed-running { display:flex; align-items:center; justify-content:center; gap:8px; color:var(--text2); font-size:12px; }
+
+    /* ─── Log Panel ── */
+    #panel-log { overflow:hidden; }
+    #log-output {
+      flex:1; overflow-y:auto; padding:10px 12px;
+      font-family:var(--mono); font-size:11px; line-height:1.7;
+      color:var(--text2); background:var(--bg);
+    }
+    #log-output .log-line { display:flex; gap:8px; }
+    #log-output .log-time { color:var(--text3); flex-shrink:0; }
+    #log-output .log-msg { color:var(--text2); }
+    #log-output .log-msg.info { color:var(--text2); }
+    #log-output .log-msg.success { color:var(--green); }
+    #log-output .log-msg.error { color:var(--red); }
+    #log-output .log-msg.warn { color:var(--yellow); }
+    .log-actions { display:flex; gap:6px; padding:8px 12px; border-top:1px solid var(--border); flex-shrink:0; }
+
+    /* ─── Configs Panel ── */
+    #panel-configs { overflow:hidden; }
+    .panel-header { padding:14px 16px 10px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .panel-title { font-family:var(--mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); }
+    .panel-action-btn { background:transparent; border:1px solid var(--border); border-radius:var(--radius); color:var(--text2); padding:4px 10px; cursor:pointer; font-size:11px; font-family:var(--mono); transition:all 0.15s; }
+    .panel-action-btn:hover { border-color:var(--border2); color:var(--text); }
+    #configs-list { flex:1; overflow-y:auto; padding:8px; }
+    .config-item { display:flex; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:var(--radius); margin-bottom:6px; cursor:pointer; transition:all 0.15s; gap:10px; }
+    .config-item:hover { border-color:var(--border2); background:var(--bg1); }
+    .config-item.selected { border-color:var(--text3); background:var(--bg1); }
+    .config-item-sel { width:6px; height:6px; border-radius:50%; background:var(--text3); flex-shrink:0; }
+    .config-item.selected .config-item-sel { background:var(--green); }
+    .config-item-info { flex:1; min-width:0; }
+    .config-item-name { font-weight:500; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .config-item-addr { font-family:var(--mono); font-size:10px; color:var(--text3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .config-item-ping { font-family:var(--mono); font-size:11px; color:var(--text3); flex-shrink:0; min-width:48px; text-align:right; }
+    .config-item-ping.good { color:var(--green); }
+    .config-item-ping.ok { color:var(--yellow); }
+    .config-item-ping.bad { color:var(--red); }
+    .config-item-actions { display:flex; gap:4px; flex-shrink:0; }
+    .ci-btn { width:24px; height:24px; border:none; background:transparent; color:var(--text3); cursor:pointer; border-radius:var(--radius); display:flex; align-items:center; justify-content:center; font-size:13px; transition:all 0.15s; }
+    .ci-btn:hover { background:var(--bg3); color:var(--text); }
+    .ci-btn.del:hover { background:var(--red-dim); color:var(--red); }
+    .configs-empty { text-align:center; color:var(--text3); padding:40px 20px; font-size:12px; line-height:2; }
+
+    /* ─── Add Panel ── */
+    #panel-add { overflow-y:auto; padding:16px; gap:12px; }
+    .add-tabs { display:flex; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .add-tab { flex:1; padding:8px; background:transparent; border:none; color:var(--text3); cursor:pointer; font-family:var(--mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; transition:all 0.15s; }
+    .add-tab.active { background:var(--bg2); color:var(--text); }
+    .add-form { display:flex; flex-direction:column; gap:10px; }
+    .hidden { display:none !important; }
+    .field-group { display:flex; flex-direction:column; gap:4px; }
+    .field-label { font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text3); }
+    .field-input { background:var(--bg1); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); padding:8px 10px; font-family:var(--mono); font-size:12px; outline:none; transition:border-color 0.15s; width:100%; -webkit-user-select:text; user-select:text; }
+    .field-input::placeholder { color:var(--text3); }
+    .field-input:focus { border-color:var(--border2); }
+    .field-row { display:flex; gap:8px; }
+    .field-row .field-group { flex:1; }
+    .field-row .field-group:last-child { flex:0 0 80px; }
+    .paste-area { background:var(--bg1); border:1px solid var(--border); border-radius:var(--radius); padding:10px; font-family:var(--mono); font-size:11px; color:var(--text2); min-height:80px; resize:none; outline:none; width:100%; -webkit-user-select:text; user-select:text; transition:border-color 0.15s; }
+    .paste-area:focus { border-color:var(--border2); }
+    .btn-primary { background:var(--text); color:var(--bg); border:none; border-radius:var(--radius); padding:10px 16px; font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; transition:opacity 0.15s; width:100%; }
+    .btn-primary:hover { opacity:0.9; }
+    .btn-secondary { background:transparent; color:var(--text2); border:1px solid var(--border); border-radius:var(--radius); padding:9px 16px; font-family:var(--sans); font-size:12px; cursor:pointer; transition:all 0.15s; width:100%; }
+    .btn-secondary:hover { border-color:var(--border2); color:var(--text); }
+    .form-error { color:var(--red); font-size:11px; font-family:var(--mono); min-height:16px; }
+
+    /* ─── Settings ── */
+    #panel-settings { overflow-y:auto; padding:16px; gap:12px; }
+    .settings-section { background:var(--bg1); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .settings-section-title { padding:10px 14px; font-family:var(--mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); border-bottom:1px solid var(--border); }
+    .setting-row { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); }
+    .setting-row:last-child { border-bottom:none; }
+    .setting-row-label { font-size:13px; font-weight:500; }
+    .setting-row-sub { font-size:11px; color:var(--text3); margin-top:2px; }
+    .toggle { position:relative; width:48px; height:26px; cursor:pointer; }
+    .toggle input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:var(--bg3); border:1px solid var(--border2); border-radius:13px; transition:all 0.2s; }
+    .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:var(--text3); border-radius:50%; transition:all 0.2s; }
+    .toggle input:checked + .toggle-slider { background:var(--green-dim); border-color:var(--green); }
+    .toggle input:checked + .toggle-slider::before { background:var(--green); transform:translateX(22px); }
+    .toggle input:disabled + .toggle-slider { opacity:0.5; cursor:not-allowed; }
+
+    /* ─── Navbar ── */
+    #navbar { display:flex; border-top:1px solid var(--border); background:var(--bg); flex-shrink:0; height:48px; }
+    .nav-btn { flex:1; border:none; background:transparent; color:var(--text3); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; transition:color 0.15s; font-size:9px; font-family:var(--mono); letter-spacing:0.08em; text-transform:uppercase; padding:0; }
+    .nav-btn:hover { color:var(--text2); }
+    .nav-btn.active { color:var(--text); }
+    .nav-btn svg { width:18px; height:18px; }
+
+    /* ─── Error toast ── */
+    #error-toast { position:fixed; bottom:56px; left:12px; right:12px; background:var(--red-dim); border:1px solid var(--red); color:var(--red); border-radius:var(--radius); padding:10px 14px; font-size:12px; z-index:999; transform:translateY(20px); opacity:0; transition:all 0.2s; pointer-events:none; }
+    #error-toast.show { transform:translateY(0); opacity:1; }
+
+    /* ─── Modal ── */
+    #modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; align-items:center; justify-content:center; }
+    #modal-overlay.show { display:flex; }
+    #modal { background:var(--bg1); border:1px solid var(--border2); border-radius:6px; width:340px; max-height:90vh; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; }
+    .modal-title { font-weight:600; font-size:14px; margin-bottom:4px; }
+
+    /* ─── Misc ── */
+    .spinner { width:14px; height:14px; border:2px solid var(--border2); border-top-color:var(--text2); border-radius:50%; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .pinging { animation:blink 1s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Titlebar -->
+  <div id="titlebar">
+    <div class="logo">
+      <span class="app-name">LYNX</span>
+    </div>
+    <div class="win-btns">
+      <button class="win-btn" onclick="window.npvt.minimize()" title="Minimize">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="12" height="12"><path d="M3 8h10" stroke-linecap="round"/></svg>
+      </button>
+      <button class="win-btn close" onclick="window.npvt.close()" title="Close">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="12" height="12"><path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="main">
+
+    <!-- HOME -->
+    <div id="panel-home" class="panel active">
+
+      <div class="connect-section">
+        <div class="connect-info">
+          <div class="connect-label">Status</div>
+          <div class="connect-status" id="status-text">Disconnected</div>
+          <div class="connect-sub" id="status-sub">—</div>
+        </div>
+        <div class="power-btn-wrap">
+          <button class="power-btn" id="power-btn" onclick="onPowerClick()" title="Connect / Disconnect">
+            <svg class="power-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v6"/>
+              <path d="M6.8 6.8a8 8 0 1 0 10.4 0"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="selected-config-card">
+        <div class="config-card-label">Active Config</div>
+        <div id="home-config-name" class="config-card-empty">No config selected — go to Configs</div>
+        <div id="home-config-host" class="config-card-host" style="display:none"></div>
+      </div>
+
+      <div class="mode-row">
+        <button class="mode-btn active" id="btn-proxy-mode" onclick="setMode('proxy')">
+          <span class="mode-icon">⇄</span>
+          <span>Proxy</span>
+          <span class="mode-sub">127.0.0.1:10805</span>
+        </button>
+        <button class="mode-btn" id="btn-vpn-mode" onclick="setMode('vpn')">
+          <span class="mode-icon">◎</span>
+          <span>VPN</span>
+          <span class="mode-sub">System routing</span>
+        </button>
+      </div>
+
+      <div class="proxy-info" id="proxy-info">
+        <div class="config-card-label">Proxy Address</div>
+        <div class="proxy-addr" id="proxy-addr-text"><span>SOCKS5 · </span>127.0.0.1:10805</div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="quick-btn" onclick="runHomePing()">
+          <span class="qb-icon">◉</span> <span id="home-ping-label">Ping</span>
+        </button>
+        <button class="quick-btn" onclick="runSpeedTest()">
+          <span class="qb-icon">▶</span> Speed Test
+        </button>
+        <button class="quick-btn" onclick="goPanel('configs')">
+          <span class="qb-icon">≡</span> Configs
+        </button>
+        <button class="quick-btn" onclick="goPanel('add')">
+          <span class="qb-icon">+</span> Add Config
+        </button>
+      </div>
+
+      <div id="home-ping-result" style="display:none" class="proxy-info">
+        <div class="config-card-label">Ping Result</div>
+        <div class="proxy-addr" id="home-ping-value">—</div>
+      </div>
+
+      <div class="speed-result" id="speed-result" style="display:none">
+        <div class="config-card-label">Download Speed</div>
+        <div class="speed-number" id="speed-number">—</div>
+        <div class="speed-unit">Mbps</div>
+      </div>
+
+    </div>
+
+    <!-- CONFIGS -->
+    <div id="panel-configs" class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Configurations</span>
+        <div style="display:flex;gap:6px">
+          <button class="panel-action-btn" onclick="runPingAll()" id="ping-all-btn">Ping All</button>
+          <button class="panel-action-btn" onclick="goPanel('add')">+ Add</button>
+        </div>
+      </div>
+      <div id="configs-list"></div>
+    </div>
+
+    <!-- ADD -->
+    <div id="panel-add" class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Add Configuration</span>
+        <button class="panel-action-btn" onclick="goPanel('configs')">← Back</button>
+      </div>
+      <div class="add-tabs" style="margin:0 16px">
+        <button class="add-tab active" onclick="switchAddTab('uri')">URI / Clipboard</button>
+        <button class="add-tab" onclick="switchAddTab('manual')">Manual SSH</button>
+      </div>
+      <div id="add-tab-uri" class="add-form" style="padding:0 16px 16px">
+        <div class="field-group">
+          <div class="field-label">Paste npvt-ssh:// URI or JSON</div>
+          <textarea class="paste-area" id="uri-input" placeholder="npvt-ssh://... or paste JSON config" rows="5"></textarea>
+        </div>
+        <button class="btn-secondary" onclick="pasteFromClipboard()">↓ Paste from Clipboard</button>
+        <div class="form-error" id="uri-error"></div>
+        <button class="btn-primary" onclick="addConfigFromUri()">Add Configuration</button>
+      </div>
+      <div id="add-tab-manual" class="add-form hidden" style="padding:0 16px 16px">
+        <div class="field-group">
+          <div class="field-label">Name / Remarks</div>
+          <input class="field-input" id="m-name" type="text" placeholder="My Server" />
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">SSH Host</div>
+            <input class="field-input" id="m-host" type="text" placeholder="1.2.3.4" />
+          </div>
+          <div class="field-group">
+            <div class="field-label">Port</div>
+            <input class="field-input" id="m-port" type="number" placeholder="22" value="22" min="1" max="65535" />
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Username</div>
+          <input class="field-input" id="m-user" type="text" placeholder="root" />
+        </div>
+        <div class="field-group">
+          <div class="field-label">Password</div>
+          <input class="field-input" id="m-pass" type="password" placeholder="••••••••" />
+        </div>
+        <div class="field-group">
+          <div class="field-label">DNS Mode</div>
+          <select class="field-input" id="m-dns">
+            <option value="UDP">UDP</option>
+            <option value="TCP">TCP</option>
+            <option value="DOH">DNS over HTTPS</option>
+          </select>
+        </div>
+        <div class="form-error" id="manual-error"></div>
+        <button class="btn-primary" onclick="addConfigManual()">Add Configuration</button>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div id="panel-log" class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Connection Log</span>
+        <button class="panel-action-btn" onclick="clearLog()">Clear</button>
+      </div>
+      <div id="log-output"></div>
+      <div class="log-actions">
+        <button class="panel-action-btn" id="log-autoscroll-btn" onclick="toggleAutoscroll()">Autoscroll: ON</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="panel-settings" class="panel">
+      <div class="panel-header"><span class="panel-title">Settings</span></div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1">
+        <div class="settings-section">
+          <div class="settings-section-title">Proxy</div>
+          <div class="setting-row">
+            <div class="setting-row-info">
+              <div class="setting-row-label">Proxy Port</div>
+              <div class="setting-row-sub">SOCKS5 local port</div>
+            </div>
+            <input class="field-input" id="s-port" type="number" style="width:80px;text-align:right" onchange="saveSetting('proxyPort', parseInt(this.value))" />
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Behavior</div>
+          <div class="setting-row">
+            <div class="setting-row-info">
+              <div class="setting-row-label">Run in Background</div>
+              <div class="setting-row-sub">Keep running when window is closed</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="s-background" onchange="saveSetting('runInBackground', this.checked)" /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row-info">
+              <div class="setting-row-label">Auto Connect</div>
+              <div class="setting-row-sub">Connect on app launch</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="s-autoconnect" onchange="saveSetting('autoConnect', this.checked)" /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">About</div>
+          <div class="setting-row">
+            <div class="setting-row-info">
+              <div class="setting-row-label">LYNX</div>
+              <div class="setting-row-sub">v1.0.0 · Open Source · MIT License</div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row-info">
+              <div class="setting-row-label">GitHub</div>
+              <div class="setting-row-sub">Source code & releases</div>
+            </div>
+            <button class="panel-action-btn" onclick="window.npvt.openExternal('https://github.com/xkmikze/lynx')">Open ↗</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Navbar -->
+  <nav id="navbar">
+    <button class="nav-btn active" id="nav-home" onclick="goPanel('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-4h4v4h4a1 1 0 001-1v-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Home
+    </button>
+    <button class="nav-btn" id="nav-configs" onclick="goPanel('configs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
+      Configs
+    </button>
+    <button class="nav-btn" id="nav-log" onclick="goPanel('log')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 10h16M4 14h10M4 18h6" stroke-linecap="round"/></svg>
+      Log
+    </button>
+    <button class="nav-btn" id="nav-add" onclick="goPanel('add')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8" stroke-linecap="round"/></svg>
+      Add
+    </button>
+    <button class="nav-btn" id="nav-settings" onclick="goPanel('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke-linecap="round"/></svg>
+      Settings
+    </button>
+  </nav>
+
+</div>
+
+<div id="error-toast"></div>
+
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div id="modal">
+    <div class="modal-title">Edit Configuration</div>
+    <div class="field-group"><div class="field-label">Name / Remarks</div><input class="field-input" id="e-name" type="text" /></div>
+    <div class="field-row">
+      <div class="field-group"><div class="field-label">SSH Host</div><input class="field-input" id="e-host" type="text" /></div>
+      <div class="field-group"><div class="field-label">Port</div><input class="field-input" id="e-port" type="number" min="1" max="65535" /></div>
+    </div>
+    <div class="field-group"><div class="field-label">Username</div><input class="field-input" id="e-user" type="text" /></div>
+    <div class="field-group"><div class="field-label">Password</div><input class="field-input" id="e-pass" type="password" placeholder="Leave blank to keep current" /></div>
+    <div class="form-error" id="edit-error"></div>
+    <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
+    <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

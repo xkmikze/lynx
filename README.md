@@ -26,12 +26,12 @@ Grab the latest release for your platform:
 
 | Platform | Architecture | File |
 |---|---|---|
-| Windows | x64 | `LYNX-1.0.0-windows-x64-setup.exe` |
-| macOS | x64 (Intel) | `LYNX-1.0.0-mac-x64.dmg` |
-| macOS | arm64 (M1/M2/M3/M4) | `LYNX-1.0.0-mac-arm64.dmg` |
-| Linux | x64 | `LYNX-1.0.0-linux-x64.AppImage` / `lynx-1.0.0-linux-x64.deb` |
-| Linux | arm64 (Pi 4/5) | `LYNX-1.0.0-linux-arm64.AppImage` / `lynx-1.0.0-linux-arm64.deb` |
-| Linux | armv7l (Pi 2/3) | `LYNX-1.0.0-linux-armv7l.AppImage` / `lynx-1.0.0-linux-armv7l.deb` |
+| Windows | x64 | `LYNX-1.0.3-windows-x64-setup.exe` |
+| macOS | x64 (Intel) | `LYNX-1.0.3-mac-x64.dmg` |
+| macOS | arm64 (M1/M2/M3/M4) | `LYNX-1.0.3-mac-arm64.dmg` |
+| Linux | x64 | `LYNX-1.0.3-linux-x64.AppImage` / `lynx-1.0.3-linux-x64.deb` |
+| Linux | arm64 (Pi 4/5) | `LYNX-1.0.3-linux-arm64.AppImage` / `lynx-1.0.3-linux-arm64.deb` |
+| Linux | armv7l (Pi 2/3) | `LYNX-1.0.3-linux-armv7l.AppImage` / `lynx-1.0.3-linux-armv7l.deb` |
 
 → [Latest Release](https://github.com/xkmikze/lynx/releases/latest)
 

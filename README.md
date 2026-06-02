@@ -16,7 +16,6 @@ A lightweight, minimal desktop application for creating secure SOCKS5 proxy tunn
 <p align="center">
   <img src="docs/screenshot-home.png" width="280" alt="Home Screen" />
   <img src="docs/screenshot-add.png" width="280" alt="add Screen" />
-  <img src="docs/screenshot-settings.png" width="280" alt="Settings Screen" />
 </p>
 
 ---

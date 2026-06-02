@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  CSC_IDENTITY_AUTO_DISCOVERY: false
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -15,14 +18,14 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
       - name: Build Windows
-        run: npx cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win
+        run: npx electron-builder --win --x64
       - uses: actions/upload-artifact@v4
         with:
           name: windows-dist
-          path: |
-            dist/*.exe
+          path: dist/*.exe
 
   build-mac:
     runs-on: macos-latest
@@ -32,16 +35,14 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
       - name: Build macOS
-        run: npx electron-builder --mac
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npx electron-builder --mac --x64
       - uses: actions/upload-artifact@v4
         with:
           name: mac-dist
-          path: |
-            dist/*.dmg
+          path: dist/*.dmg
 
   build-linux:
     runs-on: ubuntu-latest
@@ -51,11 +52,14 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm fakeroot dpkg
+      - name: Install dependencies
+        run: npm ci
       - name: Build Linux
-        run: npx electron-builder --linux
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npx electron-builder --linux --x64
       - uses: actions/upload-artifact@v4
         with:
           name: linux-dist
@@ -77,6 +81,5 @@ jobs:
             mac-dist/*.dmg
             linux-dist/*.AppImage
             linux-dist/*.deb
-          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

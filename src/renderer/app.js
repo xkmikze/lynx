@@ -96,6 +96,7 @@ function renderHomeConfig() {
 function renderModeButtons() {
   document.getElementById('btn-proxy-mode').classList.toggle('active', state.mode === 'proxy');
   document.getElementById('btn-vpn-mode').classList.toggle('active', state.mode === 'vpn');
+  document.getElementById('btn-tun-mode').classList.toggle('active', state.mode === 'vpn-tun');
 }
 
 function renderProxyInfo() {
@@ -104,6 +105,12 @@ function renderProxyInfo() {
   if (state.mode === 'proxy') {
     info.style.display = 'block';
     addr.innerHTML = `<span>SOCKS5 · </span>${state.proxyHost}:${state.proxyPort}`;
+  } else if (state.mode === 'vpn') {
+    info.style.display = 'block';
+    addr.innerHTML = `<span>System Proxy · </span>Registry + WinHTTP`;
+  } else if (state.mode === 'vpn-tun') {
+    info.style.display = 'block';
+    addr.innerHTML = `<span>TUN · </span>All system traffic routed`;
   } else {
     info.style.display = 'none';
   }

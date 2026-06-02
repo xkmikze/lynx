@@ -23,7 +23,7 @@ const store = new Store({
   schema: {
     configs: { type: 'array', default: [] },
     selectedConfigId: { type: 'string', default: '' },
-    mode: { type: 'string', enum: ['vpn', 'proxy'], default: 'proxy' },
+    mode: { type: 'string', enum: ['vpn-tun', 'vpn', 'proxy'], default: 'proxy' },
     proxyHost: { type: 'string', default: '127.0.0.1' },
     proxyPort: { type: 'number', default: 10805 },
     runInBackground: { type: 'boolean', default: true },

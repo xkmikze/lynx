@@ -283,12 +283,17 @@
         <button class="mode-btn active" id="btn-proxy-mode" onclick="setMode('proxy')">
           <span class="mode-icon">⇄</span>
           <span>Proxy</span>
-          <span class="mode-sub">127.0.0.1:10805</span>
+          <span class="mode-sub">SOCKS5</span>
         </button>
         <button class="mode-btn" id="btn-vpn-mode" onclick="setMode('vpn')">
           <span class="mode-icon">◎</span>
           <span>VPN</span>
-          <span class="mode-sub">System routing</span>
+          <span class="mode-sub">Sys proxy</span>
+        </button>
+        <button class="mode-btn" id="btn-tun-mode" onclick="setMode('vpn-tun')">
+          <span class="mode-icon">⬡</span>
+          <span>TUN</span>
+          <span class="mode-sub">All traffic</span>
         </button>
       </div>
 
@@ -448,7 +453,7 @@
               <div class="setting-row-label">GitHub</div>
               <div class="setting-row-sub">Source code & releases</div>
             </div>
-            <button class="panel-action-btn" onclick="window.npvt.openExternal('https://github.com/xkmikze/lynx')">Open ↗</button>
+            <button class="panel-action-btn" onclick="window.npvt.openExternal('https://github.com/your-org/lynx')">Open ↗</button>
           </div>
         </div>
       </div>

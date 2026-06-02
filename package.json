@@ -1,6 +1,6 @@
 {
   "name": "lynx",
-  "version": "1.0.4",
+  "version": "1.0.3",
   "description": "Open-source SSH tunnel VPN/Proxy client — LYNX",
   "main": "src/main/main.js",
   "scripts": {
@@ -13,7 +13,10 @@
     "lint": "eslint src/"
   },
   "keywords": ["vpn", "ssh", "proxy", "npvt", "tunnel"],
-  "author": "LYNX Contributors",
+  "author": {
+  "name": "LYNX Contributors",
+  "email": "xkmikze@users.noreply.github.com"
+  },
   "license": "MIT",
   "devDependencies": {
     "cross-env": "^7.0.3",

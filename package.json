@@ -1,6 +1,6 @@
 {
   "name": "lynx",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "Open-source SSH tunnel VPN/Proxy client — LYNX",
   "main": "src/main/main.js",
   "scripts": {
@@ -12,35 +12,25 @@
     "pack": "electron-builder --dir",
     "lint": "eslint src/"
   },
-  "keywords": [
-    "vpn",
-    "ssh",
-    "proxy",
-    "npvt",
-    "tunnel"
-  ],
-  "author": {
-  "name": "LYNX Contributors",
-  "email": "xkmikze@users.noreply.github.com"
-  },
+  "keywords": ["vpn", "ssh", "proxy", "npvt", "tunnel"],
+  "author": "LYNX Contributors",
   "license": "MIT",
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "electron": "^28.3.3",
+    "electron": "^29.0.0",
     "electron-builder": "^24.9.1",
     "eslint": "^8.57.0"
   },
   "dependencies": {
-    "electron-store": "^8.2.0",
-    "electron-updater": "^6.1.7",
+    "ssh2": "^1.15.0",
     "socks": "^2.8.1",
-    "ssh2": "^1.15.0"
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.1.7"
   },
   "build": {
     "appId": "com.lynx.sshclient",
     "productName": "LYNX",
     "copyright": "Copyright © 2025 LYNX Contributors",
-    "icon": "assets/icons/icon.ico",
     "directories": {
       "output": "dist",
       "buildResources": "assets"
@@ -53,18 +43,8 @@
     ],
     "win": {
       "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
       ],
       "icon": "assets/icons/icon.ico",
       "requestedExecutionLevel": "requireAdministrator"
@@ -75,10 +55,7 @@
       "category": "public.app-category.utilities"
     },
     "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
+      "target": ["AppImage", "deb"],
       "icon": "assets/icons/icon.png",
       "category": "Network"
     },

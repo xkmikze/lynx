@@ -17,6 +17,18 @@ async function init() {
   Object.assign(state, s);
   state.connectionStatus = s.isConnected ? 'connected' : 'disconnected';
 
+  // Hide TUN button on Windows — TUN requires compiled native helper
+  // TUN mode is supported on macOS and Linux only for now
+  if (s.platform === 'win32') {
+    const tunBtn = document.getElementById('btn-tun-mode');
+    if (tunBtn) tunBtn.style.display = 'none';
+    // If somehow vpn-tun was saved, reset to proxy
+    if (state.mode === 'vpn-tun') {
+      state.mode = 'proxy';
+      await window.npvt.setMode('proxy');
+    }
+  }
+
   window.npvt.on('connection-status', (status) => {
     state.connectionStatus = status;
     state.isConnected = status === 'connected';

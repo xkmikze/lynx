@@ -216,6 +216,7 @@ ipcMain.handle('get-state', () => ({
   runInBackground: store.get('runInBackground'),
   autoConnect: store.get('autoConnect'),
   isConnected: tunnelManager.isConnected(),
+  platform: process.platform,
 }));
 
 ipcMain.handle('connect', async () => handleConnect());

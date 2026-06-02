@@ -19,7 +19,10 @@
     "npvt",
     "tunnel"
   ],
-  "author": "LYNX Contributors",
+  "author": {
+  "name": "LYNX Contributors",
+  "email": "xkmikze@users.noreply.github.com"
+  },
   "license": "MIT",
   "devDependencies": {
     "cross-env": "^7.0.3",
